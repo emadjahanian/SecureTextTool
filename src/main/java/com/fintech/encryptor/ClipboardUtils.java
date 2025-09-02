@@ -5,8 +5,9 @@ import java.awt.datatransfer.StringSelection;
 
 public class ClipboardUtils {
     public static void copyToClipboard(String text) {
-        StringSelection selection = new StringSelection(text);
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
+        Toolkit.getDefaultToolkit()
+                .getSystemClipboard()
+                .setContents(new StringSelection(text), null);
     }
 }
 

@@ -1,9 +1,8 @@
 package com.fintech.encryptor;
 
-import java.util.List;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) {
@@ -22,50 +21,45 @@ public class Main {
 
         System.out.println("Welcome " + username + "!");
 
-        System.out.print("Select action (enc/dec): ");
-        String action = scanner.nextLine().trim().toLowerCase();
+        System.out.print("1)Encrypt\n2)Decrypt\nSelect action :  ");
+        String actionChoice = scanner.nextLine().trim();
 
-        Set<String> algorithmsSet = CryptoUtils.getAvailablePBEAlgorithms();
-        List<String> algorithms = algorithmsSet.stream().sorted().collect(Collectors.toList());
+        boolean encryptAction = "1".equals(actionChoice);
 
-        System.out.println("Available algorithms:");
-        for (int i = 0; i < algorithms.size(); i++) {
-            System.out.printf("%d. %s%n", i + 1, algorithms.get(i));
+        PBEAlgorithm[] algorithms = PBEAlgorithm.values();
+        System.out.println("Available PBE Algorithms:");
+        for (int i = 0; i < algorithms.length; i++) {
+            System.out.printf("%d. %s%n", i + 1, algorithms[i]);
         }
 
         System.out.print("Choose algorithm number: ");
-        int choice = Integer.parseInt(scanner.nextLine());
-        if (choice < 1 || choice > algorithms.size()) {
-            System.out.println("Invalid algorithm choice!");
+        int algoIndex = Integer.parseInt(scanner.nextLine()) - 1;
+        if (algoIndex < 0 || algoIndex >= algorithms.length) {
+            System.out.println("Invalid algorithm selection!");
             return;
         }
-        String algorithm = algorithms.get(choice - 1);
+
+        String selectedAlgorithm = algorithms[algoIndex].getAlgorithm();
 
         System.out.print("Enter text: ");
         String text = scanner.nextLine();
 
         try {
-            if ("enc".equals(action)) {
-                String encrypted = CryptoUtils.encrypt(text, password, algorithm);
-                System.out.println("Encrypted text: " + encrypted);
-
-                String encryptedText = CryptoUtils.encrypt(text, password, algorithm);
-                ClipboardUtils.copyToClipboard(encryptedText);
-                System.out.println("Encrypted text copied to clipboard: " + encryptedText);
-
-            } else if ("dec".equals(action)) {
-                String decrypted = CryptoUtils.decrypt(text, password, algorithm);
-                System.out.println("Decrypted text: " + decrypted);
-
-                String encryptedText = CryptoUtils.encrypt(text, password, algorithm);
-                ClipboardUtils.copyToClipboard(encryptedText);
-                System.out.println("Decrypted text copied to clipboard: " + encryptedText);
-
+            String result;
+            if (encryptAction) {
+                result = CryptoUtils.encrypt(text, password, selectedAlgorithm);
+                System.out.println("Encrypted text: " + result);
             } else {
-                System.out.println("Unknown action: " + action);
+                result = CryptoUtils.decrypt(text, password, selectedAlgorithm);
+                System.out.println("Decrypted text: " + result);
             }
+
+            StringSelection selection = new StringSelection(result);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
+            System.out.println("Result copied to clipboard!");
+
         } catch (Exception e) {
-            System.out.println("Error during " + action.toUpperCase() + ": " + e.getMessage());
+            System.out.println("Operation failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
